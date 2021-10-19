@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 import json
-from fastapi import FastAPI
 from pkg_resources import resource_listdir
 
 from torrent import test_dl_billie
 from torrent import test_rm_all
 from tmdb import popular
 import search
-=======
 from typing import Optional, List
 
 from fastapi import FastAPI, Depends
@@ -17,7 +14,7 @@ import models, crud
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
->>>>>>> 0776f59681562b305510efd9d5b30c067af0ec9a
+
 
 app = FastAPI()
 
