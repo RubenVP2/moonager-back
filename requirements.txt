@@ -4,6 +4,7 @@ certifi==2021.10.8
 charset-normalizer==2.0.7
 click==8.0.3
 fastapi==0.70.0
+feedparser==6.0.8
 greenlet==1.1.2
 h11==0.12.0
 httptools==0.2.0
@@ -14,6 +15,7 @@ python-dotenv==0.19.1
 PyYAML==6.0
 qbittorrent-api==2021.8.23
 requests==2.26.0
+sgmllib3k==1.0.0
 six==1.16.0
 sniffio==1.2.0
 SQLAlchemy==1.4.25
