@@ -1,42 +1,78 @@
 import requests
+from pydantic import BaseModel
+from typing import Optional
 
-class TMBDContent:
-    def __init__(self, id, name, mediaType, adult, videos):
-        self.id = id
-        self.name = name
-        self.mediaType = mediaType
-        self.adult = adult
-        self.videos= videos
+
+class TMDBRequest(BaseModel):
+    mediaType: str
+    apiKey: str
+    lang: Optional[str] = "en-US"
+
+
+class TMBDContent(TMDBRequest):
+    id: int
+    name: Optional[str] = None
+
 
 class TMDBMovieInfo(TMBDContent):
-    def __init__(self, poster, backdrop, genres, overview, runtime, release_date, vote_average, popularity, collection):
-        self.backdrop = backdrop
-        self.poster = poster
-        self.genres = genres
-        self.overview = overview
-        self.runtime = runtime
-        self.release_date = release_date
-        self.vote_average = vote_average
-        self.popularity = popularity
-        self.collection = collection
+    backdrop: str
+    poster: str
+    genres: dict
+    overview: str
+    runtime: int
+    release_date: str
+    vote_average: float
+    vote_count: int
+    popularity: float
+    collection: Optional[dict] = None
+    adult: str
+    videos: list
 
-def getPopulars(mediaType, apiKey, language):
-    print("start top request")
-    responseTop = requests.get("https://api.themoviedb.org/3/"+mediaType+"/popular?api_key="+apiKey+"&language="+language).json()
-    print("stop top request")
+
+def getPopulars(request):
+    responseTop = requests.get("https://api.themoviedb.org/3/"+request.mediaType +
+                               "/popular?api_key="+request.apiKey+"&language="+request.lang).json()
     content = {}
     for index, results in enumerate(responseTop["results"]):
         print("start video request", index)
-        reponseVideo = requests.get("https://api.themoviedb.org/3/"+mediaType+"/"+str(results["id"])+"/videos?api_key="+apiKey+"&language="+language).json()
+        reponseVideo = requests.get("https://api.themoviedb.org/3/"+request.mediaType+"/"+str(
+            results["id"])+"/videos?api_key="+request.apiKey+"&language="+request.lang).json()
         print("stop video request", index)
-        if mediaType == "movie":
-            content[format(index)] = TMBDContent(results["id"], results["title"], mediaType, results["adult"], reponseVideo["results"])
-        elif mediaType == "tv":
-            content[format(index)] = TMBDContent(results["id"], results["name"], mediaType, results["adult"], reponseVideo["results"])
+        if request.mediaType == "movie":
+            content[format(index)] = TMBDContent(mediaType=request.mediaType,
+                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"], name=results["title"])
+        elif request.mediaType == "tv":
+            content[format(index)] = TMBDContent(mediaType=request.mediaType,
+                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"], name=results["name"])
     return content
 
-#def getInfos(id, mediaType, apiKey, language):
-#    responseInfo = requests.get("https://api.themoviedb.org/3/"+mediaType+"/"+id+"?api_key="+apiKey+"&language="+language).json()
-#    content = {}
-#    for index, results in enumerate(responseTop["results"]):
-top20=getPopulars("movie", "569760ff55e24c593b9cf89e8503decd", "language=fr-FR")
+
+def getInfos(content):
+    reponseVideo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
+                                "/"+str(content.id)+"/videos?api_key="+content.apiKey+"&language="+content.lang).json()
+    #print(type(reponseVideo["results"]))
+    responseInfo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
+                                "/"+str(content.id)+"?api_key="+content.apiKey+"&language="+content.lang).json()
+    print(responseInfo["belongs_to_collection"])
+    info = TMDBMovieInfo(
+            mediaType=content.mediaType,
+            apiKey=content.apiKey,
+            lang=content.lang,
+            id=content.id,
+            name=content.name,
+            backdrop=responseInfo["backdrop_path"],
+            poster=responseInfo["poster_path"],
+            genres=responseInfo["genres"],
+            overview=responseInfo["overview"],
+            runtime=responseInfo["runtime"],
+            release_date=responseInfo["release_date"],
+            vote_average=responseInfo["vote_average"],
+            vote_count=responseInfo["vote_count"],
+            popularity=responseInfo["popularity"],
+            adult=responseInfo["adult"],
+            videos=reponseVideo["results"]
+    )
+    if responseInfo["belongs_to_collection"]:
+        info = TMDBMovieInfo(collection=responseInfo["belongs_to_collection"])
+
+    return info
