@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from pkg_resources import resource_listdir
-from typing import Optional, List
 import models
+from database import SessionLocal, engine
 import crud
 import search
 import tmdb
-import torrent
+from models import TMDBRequest, TMDBSearch, TorrentRequest, Film
+
 
 # Initialization
 models.Base.metadata.create_all(bind=engine)
@@ -17,6 +16,10 @@ app = FastAPI()
 
 
 def get_db():
+    """
+    Ouverture de la session database
+    Se ferme automatiquement après le return d'une réponse http
+    """
     db = SessionLocal()
     try:
         yield db
@@ -27,36 +30,56 @@ def get_db():
 # Routes API
 @app.get("/")
 def read_root():
-    return {"ekip"}
+    """
+    Route de base de l'API
+    """
+    return {"ekip": "https://youtu.be/-lDdP5o_Yao?t=13"}
 
 
 @app.post("/top/")
-async def get_top20(request: tmdb.TMDBRequest):
-    top20 = tmdb.getPopulars(request)
-    return top20
+async def get_top(request: TMDBRequest):
+    """
+    Retourne le top 20 des films populaires
+    """
+    top = tmdb.get_populars(request)
+    return top
 
 
-@app.post("/addMovie/")
-def addMovie(query: search.TorrentRequest, db: Session = Depends(get_db)):
-    torrent = search.findTorrent(query)
-    #film = crud.create_film(db, models.Film(id_imdb=1, hash_torrent="TEST"))
+@app.post("/searchTorrent")
+def get_torrent(query: TorrentRequest, db: Session = Depends(get_db)):
+    """
+    Retourne l'url du torrent pour un film
+    Samos explique moi en vocal exactement à quoi sert cette fonction
+    Est-ce que c'est ici qu'il faut utiliser le db pour insérer le nom du film + le hash du torrent ?
+    """
+    torrent = search.find_torrent(query)
+    # crud.create_film(db, Film(id_imdb=1, hash_torrent="TEST"))
     return torrent
 
 
-@app.post("/search/")
-def TMBDSearch(search: tmdb.TMDBSearch):
-    content = tmdb.findContent(search)
+@app.post("/search")
+def search_from_tmdb(search: TMDBSearch):
+    """
+    Recherche un film dans TMDB 
+    """
+    content = tmdb.find_content(search)
     return content
 
 
 @app.get("/films")
 def read_films(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retourne tous les films de la base de données
+    """
     films = crud.get_films(db, skip=skip, limit=limit)
     return films
 
 
 @app.get("/films/{film_id}/delete")
 def delete_film(film_id: int, db: Session = Depends(get_db)):
+    """
+    Supprime un film de la base de données
+    """
     # A modifier, actuellement supprime un film dans la base de données avec un vieu id et hash
     film = crud.delete_film(db, film_id=film_id)
     return film
