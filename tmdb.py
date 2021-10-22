@@ -9,6 +9,10 @@ class TMDBRequest(BaseModel):
     lang: Optional[str] = "en-US"
 
 
+class TMDBSearch(TMDBRequest):
+    query: Optional[str] = None
+
+
 class TMBDContent(TMDBRequest):
     id: int
     name: Optional[str] = None
@@ -47,30 +51,36 @@ def getPopulars(request):
     return content
 
 
+def findContent(search):
+    responseSearch = requests.get("https://api.themoviedb.org/3/search/"+search.mediaType+"?api_key=" +
+                                  search.apiKey+"&language="+search.lang+"&language="+search.lang+"&query="+search.query).json()
+    return responseSearch
+
+
 def getInfos(content):
     reponseVideo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
                                 "/"+str(content.id)+"/videos?api_key="+content.apiKey+"&language="+content.lang).json()
-    #print(type(reponseVideo["results"]))
+    # print(type(reponseVideo["results"]))
     responseInfo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
                                 "/"+str(content.id)+"?api_key="+content.apiKey+"&language="+content.lang).json()
     print(responseInfo["belongs_to_collection"])
     info = TMDBMovieInfo(
-            mediaType=content.mediaType,
-            apiKey=content.apiKey,
-            lang=content.lang,
-            id=content.id,
-            name=content.name,
-            backdrop=responseInfo["backdrop_path"],
-            poster=responseInfo["poster_path"],
-            genres=responseInfo["genres"],
-            overview=responseInfo["overview"],
-            runtime=responseInfo["runtime"],
-            release_date=responseInfo["release_date"],
-            vote_average=responseInfo["vote_average"],
-            vote_count=responseInfo["vote_count"],
-            popularity=responseInfo["popularity"],
-            adult=responseInfo["adult"],
-            videos=reponseVideo["results"]
+        mediaType=content.mediaType,
+        apiKey=content.apiKey,
+        lang=content.lang,
+        id=content.id,
+        name=content.name,
+        backdrop=responseInfo["backdrop_path"],
+        poster=responseInfo["poster_path"],
+        genres=responseInfo["genres"],
+        overview=responseInfo["overview"],
+        runtime=responseInfo["runtime"],
+        release_date=responseInfo["release_date"],
+        vote_average=responseInfo["vote_average"],
+        vote_count=responseInfo["vote_count"],
+        popularity=responseInfo["popularity"],
+        adult=responseInfo["adult"],
+        videos=reponseVideo["results"]
     )
     if responseInfo["belongs_to_collection"]:
         info = TMDBMovieInfo(collection=responseInfo["belongs_to_collection"])
