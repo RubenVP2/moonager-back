@@ -45,10 +45,11 @@ def findTorrent(request):
         if len(entry) > index:
             if re.search(regex, entry.title, re.IGNORECASE):
                 if int(entry.size) < int(request.sizeMax):
-                    torrent[index] = TorrentFind(title=entry.title, category=request.mediaType, size=entry.size, seeders=seeders, url=entry.link)
+                    torrent[index] = TorrentFind(
+                        title=entry.title, category=request.mediaType, size=entry.size, seeders=seeders, url=entry.link)
     return torrent
 
 
-#request = TorrentRequest(query="Venom", mediaType="movie",
+# request = TorrentRequest(query="Venom", mediaType="movie",
 #                         encoding="x264", resolution="1080p", sizeMax="100000000000000000")
-#print(findTorrent(request))
+# print(findTorrent(request))
