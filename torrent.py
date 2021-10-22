@@ -10,5 +10,3 @@ def download(url, cat):
 # def getTorrentsInfos():
 qbt_client = qbittorrentapi.Client(
     host='https://dl.etur.fr', username='sam', password='usLw9QiXxQ23Dt')
-for torrent in qbt_client.torrents_info():
-    print(f'{torrent.hash}: {torrent.name} ({torrent.state})')

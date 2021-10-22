@@ -38,10 +38,8 @@ def getPopulars(request):
                                "/popular?api_key="+request.apiKey+"&language="+request.lang).json()
     content = {}
     for index, results in enumerate(responseTop["results"]):
-        print("start video request", index)
         reponseVideo = requests.get("https://api.themoviedb.org/3/"+request.mediaType+"/"+str(
             results["id"])+"/videos?api_key="+request.apiKey+"&language="+request.lang).json()
-        print("stop video request", index)
         if request.mediaType == "movie":
             content[format(index)] = TMBDContent(mediaType=request.mediaType,
                                                  apiKey=request.apiKey, lang=request.lang, id=results["id"], name=results["title"])
@@ -60,10 +58,8 @@ def findContent(search):
 def getInfos(content):
     reponseVideo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
                                 "/"+str(content.id)+"/videos?api_key="+content.apiKey+"&language="+content.lang).json()
-    # print(type(reponseVideo["results"]))
     responseInfo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
                                 "/"+str(content.id)+"?api_key="+content.apiKey+"&language="+content.lang).json()
-    print(responseInfo["belongs_to_collection"])
     info = TMDBMovieInfo(
         mediaType=content.mediaType,
         apiKey=content.apiKey,

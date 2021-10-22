@@ -35,7 +35,6 @@ def findTorrent(request):
     request.query = request.query.replace(" ", "+")
     url = "https://jk.etur.fr/api/v2.0/indexers/yggcookie/results/torznab/api?apikey=pfpk2qtgiik9dvctqxpk54txn58vyudf&t=search&cat=" + \
         request.mediaType+"&q="+request.query
-    print(url)
     result = feedparser.parse(url)
     ResponseSeeders = requests.get(url)
     torrent = {}
@@ -48,8 +47,3 @@ def findTorrent(request):
                     torrent[index] = TorrentFind(
                         title=entry.title, category=request.mediaType, size=entry.size, seeders=seeders, url=entry.link)
     return torrent
-
-
-# request = TorrentRequest(query="Venom", mediaType="movie",
-#                         encoding="x264", resolution="1080p", sizeMax="100000000000000000")
-# print(findTorrent(request))
