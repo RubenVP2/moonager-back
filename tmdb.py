@@ -32,7 +32,7 @@ def find_content(search):
     Cette fonction retourne la liste des films correspondant à la recherche
     search: Objet TMDBRequest
     """
-    response_search = requests.get("https://api.themoviedb.org/3/search/" + search.mediaType + "?api_key=" +
+    response_search = requests.get(TMDB_API+"search/" + search.mediaType + "?api_key=" +
                                    search.apiKey + PARAM_LANGUAGE + search.lang + PARAM_LANGUAGE + search.lang
                                    + "&query=" + search.query).json()
     return response_search
@@ -46,11 +46,11 @@ def get_infos(content):
                                  "/" + str(content.id) + "?api_key=" + content.apiKey + PARAM_LANGUAGE +
                                  content.lang).json()
     info = TMDBMovieInfo(
+        title=response_info["title"],
         mediaType=content.mediaType,
         apiKey=content.apiKey,
         lang=content.lang,
         id=content.id,
-        name=content.name,
         backdrop=response_info["backdrop_path"],
         poster=response_info["poster_path"],
         genres=response_info["genres"],
