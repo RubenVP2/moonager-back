@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import models
 from database import SessionLocal, engine
 import crud
-import search
+import jackett
 import tmdb
 from models import TMDBRequest, TMDBSearch, TorrentRequest, Film
 
@@ -49,10 +49,8 @@ async def get_top(request: TMDBRequest):
 def get_torrent(query: TorrentRequest, db: Session = Depends(get_db)):
     """
     Retourne l'url du torrent pour un film
-    Samos explique moi en vocal exactement à quoi sert cette fonction
-    Est-ce que c'est ici qu'il faut utiliser le db pour insérer le nom du film + le hash du torrent ?
     """
-    torrent = search.find_torrent(query)
+    torrent = jackett.find_torrent(query)
     # crud.create_film(db, Film(id_imdb=1, hash_torrent="TEST"))
     return torrent
 
@@ -60,7 +58,7 @@ def get_torrent(query: TorrentRequest, db: Session = Depends(get_db)):
 @app.post("/search")
 def search_from_tmdb(search: TMDBSearch):
     """
-    Recherche un film dans TMDB 
+    Recherche et retourne les infos d'un film
     """
     content = tmdb.find_content(search)
     return content
