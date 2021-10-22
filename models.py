@@ -11,7 +11,7 @@ class Film(Base):
     id_imdb = Column(String, primary_key=True, unique=True, index=True)
     hash_torrent = Column(String, unique=True, index=True)
 
-
+# Search TMDB content
 class TMDBRequest(BaseModel):
     mediaType: str
     apiKey: str
@@ -48,9 +48,11 @@ class TMDBMovieInfo(TMBDContent):
     adult: str
     videos: list
 
-
+# Search torrent class
 class TorrentRequest(BaseModel):
     query: str
+    apiKey: str
+    host: str
     mediaType: str
     sizeMax: Optional[int] = 15000000000
     encoding: Optional[str] = "264"

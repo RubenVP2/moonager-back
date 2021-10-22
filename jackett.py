@@ -19,9 +19,8 @@ def find_torrent(request):
     if request.resolution is not None:
         regex = regex + "(?=.*" + request.resolution + ".*)"
     request.query = request.query.replace(" ", "+")
-    url = "https://jk.etur.fr/api/v2.0/indexers/yggcookie/results/torznab/api?apikey=pfpk2qtgiik9dvctqxpk54txn58vyudf" \
-          "&t=search&cat=" + \
-          request.mediaType + "&q=" + request.query
+    url = "http://"+request.host+"/api/v2.0/indexers/yggcookie/results/torznab/api?apikey=" + \
+        request.apiKey+"&t=search&cat=" + request.mediaType + "&q=" + request.query
     result = feedparser.parse(url)
     response_seeders = requests.get(url)
     torrent = {}
