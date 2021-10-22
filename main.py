@@ -37,14 +37,14 @@ async def get_top20(request: tmdb.TMDBRequest):
 
 
 @app.post("/addMovie/")
-def add_content(query: search.TorrentRequest, db: Session = Depends(get_db)):
+def addMovie(query: search.TorrentRequest, db: Session = Depends(get_db)):
     torrent = search.findTorrent(query)
     #film = crud.create_film(db, models.Film(id_imdb=1, hash_torrent="TEST"))
     return torrent
 
 
 @app.post("/search/")
-def add_content(search: tmdb.TMDBSearch):
+def TMBDSearch(search: tmdb.TMDBSearch):
     content = tmdb.findContent(search)
     return content
 
