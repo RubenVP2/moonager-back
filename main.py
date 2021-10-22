@@ -10,7 +10,19 @@ from models import TMDBRequest, TMDBSearch, TorrentRequest, Film
 
 # Initialization
 models.Base.metadata.create_all(bind=engine)
-app = FastAPI()
+app = FastAPI(
+    title="Moonager-back",
+    version="0.0.1",
+    contact={
+        "name": "Mange mort squad",
+        "url": "https://mangemort-squad.myspreadshop.fr/",
+        "email": "667@mangemort-squad.com",
+    },
+    license_info={
+        "name": " MIT License  ",
+        "url": "https://mit-license.org/",
+    },
+)
 
 # Dependency for db
 
@@ -36,7 +48,7 @@ def read_root():
     return {"ekip": "https://youtu.be/-lDdP5o_Yao?t=13"}
 
 
-@app.post("/top/")
+@app.post("/top")
 async def get_top(request: TMDBRequest):
     """
     Retourne le top 20 des films populaires
@@ -49,8 +61,6 @@ async def get_top(request: TMDBRequest):
 def get_torrent(query: TorrentRequest, db: Session = Depends(get_db)):
     """
     Retourne l'url du torrent pour un film
-    Samos explique moi en vocal exactement à quoi sert cette fonction
-    Est-ce que c'est ici qu'il faut utiliser le db pour insérer le nom du film + le hash du torrent ?
     """
     torrent = search.find_torrent(query)
     # crud.create_film(db, Film(id_imdb=1, hash_torrent="TEST"))

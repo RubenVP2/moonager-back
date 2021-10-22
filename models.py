@@ -29,7 +29,6 @@ class TMDBSearch(TMDBRequest):
         }
 
 
-
 class TMBDContent(TMDBRequest):
     id: int
     name: Optional[str] = None
