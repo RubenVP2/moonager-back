@@ -32,11 +32,10 @@ def read_root():
     return {"ekip"}
 
 
-@app.get("/{type}/top")
+@app.get("/{media_type}s/top")
 # TODO: Use GET Method for searching media instead POST
-async def get_top20():
-    print(type)
-    top20 = tmdb.get_popular(media_type=type)
+async def get_top20(media_type: str):
+    top20 = tmdb.get_popular(media_type=media_type)
     return top20
 
 
