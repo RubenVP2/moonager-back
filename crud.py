@@ -4,15 +4,15 @@ from fastapi import HTTPException
 import models
 
 
-def get_film(db: Session, film_id: str):
+def get_movie(db: Session, film_id: str):
     return db.query(models.Movie).filter(models.Movie.id_imdb == film_id).first()
 
 
-def get_film_by_hash(db: Session, hash_torrent: str):
+def get_movie_by_hash(db: Session, hash_torrent: str):
     return db.query(models.Movie).filter(models.Movie.hash_torrent == hash_torrent).first()
 
 
-def get_films(db: Session, skip: int = 0, limit: int = 100):
+def get_movies(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Movie).offset(skip).limit(limit).all()
 
 

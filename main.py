@@ -32,10 +32,11 @@ def read_root():
     return {"ekip"}
 
 
-@app.post("/top/")
+@app.get("/{type}/top")
 # TODO: Use GET Method for searching media instead POST
-async def get_top20(request: tmdb.TMDBRequest):
-    top20 = tmdb.getPopulars(request)
+async def get_top20():
+    print(type)
+    top20 = tmdb.get_popular(media_type=type)
     return top20
 
 
@@ -46,16 +47,16 @@ def add_movie(query: search.TorrentRequest, db: Session = Depends(get_db)):
     return torrent
 
 
-@app.post("/search/")
+@app.get("/search/")
 # TODO: Use GET Method for searching media instead POST
 def tmdb_search(search: tmdb.TMDBSearch):
-    content = tmdb.findContent(search)
+    content = tmdb.search(search)
     return content
 
 
 @app.get("/movies")
 def read_films(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    films = crud.get_films(db, skip=skip, limit=limit)
+    films = crud.get_movies(db, skip=skip, limit=limit)
     return films
 
 

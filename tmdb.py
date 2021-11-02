@@ -5,8 +5,8 @@ from typing import Optional
 
 class TMDBRequest(BaseModel):
     mediaType: str
-    apiKey: str
-    lang: Optional[str] = "en-US"
+    apiKey: Optional[str] = "569760ff55e24c593b9cf89e8503decd"
+    lang: Optional[str] = "fr-FR"
 
 
 class TMDBSearch(TMDBRequest):
@@ -33,39 +33,40 @@ class TMDBMovieInfo(TMBDContent):
     videos: list
 
 
-def getPopulars(request):
-    responseTop = requests.get("https://api.themoviedb.org/3/"+request.mediaType +
-                               "/popular?api_key="+request.apiKey+"&language="+request.lang).json()
+def get_popular(media_type):
+    tmdb = TMDBRequest()
+    responseTop = requests.get("https://api.themoviedb.org/3/"+media_type +
+                               "/popular?api_key="+tmdb.apiKey+"&language="+tmdb.lang).json()
     content = {}
     for index, results in enumerate(responseTop["results"]):
-        reponseVideo = requests.get("https://api.themoviedb.org/3/"+request.mediaType+"/"+str(
-            results["id"])+"/videos?api_key="+request.apiKey+"&language="+request.lang).json()
-        if request.mediaType == "movie":
-            content[format(index)] = TMBDContent(mediaType=request.mediaType,
-                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"], name=results["title"])
-        elif request.mediaType == "tv":
-            content[format(index)] = TMBDContent(mediaType=request.mediaType,
-                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"], name=results["name"])
+        # reponseVideo = requests.get("https://api.themoviedb.org/3/"+media_type+"/"+str(
+        #     results["id"])+"/videos?api_key="+request.apiKey+"&language="+request.lang).json()
+        if media_type == "movie":
+            content[format(index)] = TMBDContent(mediaType=media_type,
+                                                 apiKey=tmdb.apiKey, lang=tmdb.lang, id=results["id"], name=results["title"])
+        elif media_type == "tv":
+            content[format(index)] = TMBDContent(mediaType=media_type,
+                                                 apiKey=tmdb.apiKey, lang=tmdb.lang, id=results["id"], name=results["name"])
     return content
 
 
-def findContent(search):
+def search(search):
     responseSearch = requests.get("https://api.themoviedb.org/3/search/"+search.mediaType+"?api_key=" +
                                   search.apiKey+"&language="+search.lang+"&language="+search.lang+"&query="+search.query).json()
     return responseSearch
 
 
-def getInfos(content):
-    reponseVideo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
-                                "/"+str(content.id)+"/videos?api_key="+content.apiKey+"&language="+content.lang).json()
-    responseInfo = requests.get("https://api.themoviedb.org/3/"+content.mediaType +
-                                "/"+str(content.id)+"?api_key="+content.apiKey+"&language="+content.lang).json()
+def get_media_info(media):
+    reponseVideo = requests.get("https://api.themoviedb.org/3/"+media.mediaType +
+                                "/"+str(media.id)+"/videos?api_key="+media.apiKey+"&language="+media.lang).json()
+    responseInfo = requests.get("https://api.themoviedb.org/3/"+media.mediaType +
+                                "/"+str(media.id)+"?api_key="+media.apiKey+"&language="+media.lang).json()
     info = TMDBMovieInfo(
-        mediaType=content.mediaType,
-        apiKey=content.apiKey,
-        lang=content.lang,
-        id=content.id,
-        name=content.name,
+        mediaType=media.mediaType,
+        apiKey=media.apiKey,
+        lang=media.lang,
+        id=media.id,
+        name=media.name,
         backdrop=responseInfo["backdrop_path"],
         poster=responseInfo["poster_path"],
         genres=responseInfo["genres"],
