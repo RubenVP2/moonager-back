@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -60,3 +61,6 @@ def delete_film(film_id: int, db: Session = Depends(get_db)):
     # A modifier, actuellement supprime un film dans la base de données avec un vieu id et hash
     film = crud.delete_film(db, film_id=film_id)
     return film
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
