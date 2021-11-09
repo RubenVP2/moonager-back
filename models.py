@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Float
 from pydantic import BaseModel
 
 from database import Base
@@ -10,6 +10,9 @@ class Movie(Base):
     __tablename__ = "films"
     id_imdb = Column(String, primary_key=True, unique=True, index=True)
     hash_torrent = Column(String, unique=True, index=True)
+
+    def __str__(self):
+        return self.id_imdb + " - " + self.hash_torrent
 
 
 # Search TMDB content
@@ -59,6 +62,8 @@ class TMDBMovieInfo(TMDBContent):
     collection: Optional[dict] = None
     adult: str
     videos: list
+    added: bool = False
+    progress: float = 0
 
 
 class TorrentFind(BaseModel):

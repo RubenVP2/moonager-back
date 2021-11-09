@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import models
 from database import SessionLocal, engine
@@ -20,6 +21,14 @@ app = FastAPI(
         "name": " MIT License  ",
         "url": "https://mit-license.org/",
     },
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -47,8 +56,12 @@ def read_root():
 
 @app.get("/{media_type}s/top")
 # TODO: Use GET Method for searching media instead POST
-async def get_top20(media_type: str):
+async def get_top20(media_type: str, db: Session = Depends(get_db)):
     top20 = tmdb.get_popular(media_type=media_type)
+    movie = db.query(models.Movie).filter(models.Movie.id_imdb == top20[0].id).first()
+    if movie is not None:
+        top20[0].added = True
+        top20[0].progress = 30
     return top20
 
 
