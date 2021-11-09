@@ -1,12 +1,10 @@
+import uvicorn
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 import models
 from database import SessionLocal, engine
 import crud
-import jackett
 import tmdb
-from models import TMDBRequest, TMDBSearch, TorrentRequest, Film
-
 
 # Initialization
 models.Base.metadata.create_all(bind=engine)
@@ -24,7 +22,9 @@ app = FastAPI(
     },
 )
 
+
 # Dependency for db
+# TODO: Not use Franglais in your functions naming (example: replace delete_film with delete_movie)
 
 
 def get_db():
@@ -42,54 +42,39 @@ def get_db():
 # Routes API
 @app.get("/")
 def read_root():
-    """
-    Route de base de l'API
-    """
-    return {"ekip": "https://youtu.be/-lDdP5o_Yao?t=13"}
+    return {"ekip"}
 
 
-@app.post("/top")
-async def get_top(request: TMDBRequest):
-    """
-    Retourne le top 20 des films populaires
-    """
-    top = tmdb.get_populars(request)
-    return top
+@app.get("/{media_type}s/top")
+# TODO: Use GET Method for searching media instead POST
+async def get_top20(media_type: str):
+    top20 = tmdb.get_popular(media_type=media_type)
+    return top20
 
 
-@app.post("/searchTorrent")
-def get_torrent(query: TorrentRequest, db: Session = Depends(get_db)):
-    """
-    Retourne l'url du torrent pour un film
-    """
-    torrent = jackett.find_torrent(query)
-    # crud.create_film(db, Film(id_imdb=1, hash_torrent="TEST"))
-    return torrent
+@app.post("/movies/add")
+def add_movie(movie: tmdb.TMDBContent, db: Session = Depends(get_db)):
+    return movie
 
 
-@app.post("/search")
-def search_from_tmdb(search: TMDBSearch):
-    """
-    Recherche et retourne les infos d'un film
-    """
-    content = tmdb.find_content(search)
+@app.get("/search/")
+# TODO: Use GET Method for searching media instead POST
+def tmdb_search(search: tmdb.TMDBSearch):
+    content = tmdb.search(search)
     return content
 
 
-@app.get("/films")
+@app.get("/movies")
 def read_films(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Retourne tous les films de la base de données
-    """
-    films = crud.get_films(db, skip=skip, limit=limit)
+    films = crud.get_movies(db, skip=skip, limit=limit)
     return films
 
 
-@app.get("/films/{film_id}/delete")
-def delete_film(film_id: int, db: Session = Depends(get_db)):
-    """
-    Supprime un film de la base de données
-    """
-    # A modifier, actuellement supprime un film dans la base de données avec un vieu id et hash
-    film = crud.delete_film(db, film_id=film_id)
+@app.post("/movies/delete")
+def delete_movie(request: models.Media, db: Session = Depends(get_db)):
+    film = crud.delete_movie(db, movie_id=request.id)
     return film
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

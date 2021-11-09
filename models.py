@@ -1,27 +1,31 @@
+from typing import Optional
+
 from sqlalchemy import Column, String
 from pydantic import BaseModel
-from typing import Optional
 
 from database import Base
 
 
-class Film(Base):
+class Movie(Base):
     __tablename__ = "films"
     id_imdb = Column(String, primary_key=True, unique=True, index=True)
     hash_torrent = Column(String, unique=True, index=True)
 
+
 # Search TMDB content
+
+apiKey: str = "569760ff55e24c593b9cf89e8503decd"
+
+
 class TMDBRequest(BaseModel):
-    mediaType: str
-    apiKey: str
-    lang: Optional[str] = "en-US"
+    media_type: str
+    lang: Optional[str] = "fr-FR"
 
     class Config:
         schema_extra = {
             "example": {
-                "mediaType": "movie",
-                "apiKey": "569760ff55e24c593b9cf89e8503decd"
-                }
+                "media_type": "movie",
+            }
         }
 
 
@@ -31,30 +35,23 @@ class TMDBSearch(TMDBRequest):
     class Config:
         schema_extra = {
             "example": {
-                "mediaType": "movie",
-                "apiKey": "569760ff55e24c593b9cf89e8503decd",
+                "media_type": "movie",
                 "query": "Deadpool 2"
             }
         }
 
 
-class TMBDContent(TMDBRequest):
+class TMDBContent(TMDBRequest):
     id: int
+    name: Optional[str] = None
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "id": 383498
-            }
-        }
 
-class TMDBMovieInfo(TMBDContent):
-    title: str
+class TMDBMovieInfo(TMDBContent):
     backdrop: str
     poster: str
-    genres: dict
+    genres: list
     overview: str
-    runtime: int
+    runtime: str
     release_date: str
     vote_average: float
     vote_count: int
@@ -63,30 +60,6 @@ class TMDBMovieInfo(TMBDContent):
     adult: str
     videos: list
 
-# Search torrent class
-class TorrentRequest(BaseModel):
-    query: str
-    apiKey: str
-    host: str
-    mediaType: str
-    sizeMax: Optional[int] = 15000000000
-    encoding: Optional[str] = "264"
-    resolution: Optional[str] = "1080"
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "query": "Deadpool 2",
-                "apiKey": "pfpk2qtgiik9dvctqxpk54txn58vyudf",
-                "host": "jk.etur.fr",
-                "mediaType": "movie",
-                "sizeMax": 15000000000,
-                "encoding": "264",
-                "resolution": "1080"
-            }
-        }
-
-
 
 class TorrentFind(BaseModel):
     title: str
@@ -94,3 +67,8 @@ class TorrentFind(BaseModel):
     size: int
     seeders: int
     url: str
+
+
+class Media(BaseModel):
+    id: str
+    name: Optional[str] = None

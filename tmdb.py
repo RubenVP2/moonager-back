@@ -1,56 +1,62 @@
 import requests
-
-from models import TMBDContent, TMDBMovieInfo
-
-# Création de constante pour les str utilisés plusieurs fois
-TMDB_API = "https://api.themoviedb.org/3/"
-PARAM_LANGUAGE = "&language="
+from fastapi import HTTPException
+from models import *
 
 
-def get_populars(request):
-    """
-    Cette fonction retourne le top 20 des films populaires depuis l'api TMDB
-    request: Objet TMDBRequest
-    """
-    response_from_tmdb = requests.get(TMDB_API + request.mediaType +
-                                      "/popular?api_key=" + request.apiKey + PARAM_LANGUAGE + request.lang).json()
-    content = {}
-    for index, results in enumerate(response_from_tmdb["results"]):
-        if request.mediaType == "movie":
-            content[format(index)] = TMBDContent(mediaType=request.mediaType,
-                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"],
-                                                 name=results["title"])
-        elif request.mediaType == "tv":
-            content[format(index)] = TMBDContent(mediaType=request.mediaType,
-                                                 apiKey=request.apiKey, lang=request.lang, id=results["id"],
-                                                 name=results["name"])
-    return content
+def get_popular(media_type):
+    tmdb = TMDBRequest(media_type=media_type)
+    response = requests.get("https://api.themoviedb.org/3/" + media_type +
+                            "/popular?api_key=" + apiKey + "&language=" + tmdb.lang).json()
+    content = []
+    try:
+        for index, media in enumerate(response["results"]):
+            if media_type == "movie":
+                content.append(TMDBMovieInfo(media_type=tmdb.media_type,
+                                             lang=tmdb.lang,
+                                             id=media["id"],
+                                             name=media["title"],
+                                             backdrop="https://image.tmdb.org/t/p/original" + media["backdrop_path"],
+                                             poster="https://image.tmdb.org/t/p/original" + media["poster_path"],
+                                             genres=media["genre_ids"],
+                                             overview=media["overview"],
+                                             runtime="",
+                                             release_date=media["release_date"],
+                                             vote_average=media["vote_average"],
+                                             vote_count=media["vote_count"],
+                                             popularity=media["popularity"],
+                                             adult=media["adult"],
+                                             videos=[]))
+            elif media_type == "tv":
+                content.append(TMBDContent(media_type=tmdb.media_type,
+                                           lang=tmdb.lang,
+                                           id=media["id"],
+                                           name=media["name"]))
+        return content
+    except Exception as error:
+        print(error)
+        if "status_message" in response:
+            raise HTTPException(status_code=500, detail=response["status_message"])
+        else:
+            raise HTTPException(status_code=500, detail="Internal error")
 
 
-def find_content(search):
-    """
-    Cette fonction retourne la liste des films correspondant à la recherche
-    search: Objet TMDBRequest
-    """
-    response_search = requests.get(TMDB_API+"search/" + search.mediaType + "?api_key=" +
-                                   search.apiKey + PARAM_LANGUAGE + search.lang + PARAM_LANGUAGE + search.lang
-                                   + "&query=" + search.query).json()
+def search(media):
+    response_search = requests.get("https://api.themoviedb.org/3/search/" + media.mediaType + "?api_key=" +
+                                   apiKey + "&language=" + media.lang + "&language=" + media.lang +
+                                   "&query=" + media.query).json()
     return response_search
 
 
-def get_infos(content):
-    response_video = requests.get(TMDB_API + content.mediaType +
-                                  "/" + str(content.id) + "/videos?api_key=" + content.apiKey + PARAM_LANGUAGE +
-                                  content.lang).json()
-    response_info = requests.get(TMDB_API + content.mediaType +
-                                 "/" + str(content.id) + "?api_key=" + content.apiKey + PARAM_LANGUAGE +
-                                 content.lang).json()
+def get_media_info(media):
+    response_video = requests.get("https://api.themoviedb.org/3/" + media.mediaType +
+                                  "/" + str(media.id) + "/videos?api_key=" + apiKey + "&language=" + media.lang).json()
+    response_info = requests.get("https://api.themoviedb.org/3/" + media.mediaType +
+                                 "/" + str(media.id) + "?api_key=" + apiKey + "&language=" + media.lang).json()
     info = TMDBMovieInfo(
-        title=response_info["title"],
-        mediaType=content.mediaType,
-        apiKey=content.apiKey,
-        lang=content.lang,
-        id=content.id,
+        mediaType=media.mediaType,
+        lang=media.lang,
+        id=media.id,
+        name=media.name,
         backdrop=response_info["backdrop_path"],
         poster=response_info["poster_path"],
         genres=response_info["genres"],
