@@ -2,6 +2,8 @@ import requests
 from fastapi import HTTPException
 from models import *
 
+tmdb_picture_base_link = "https://image.tmdb.org/t/p/original"
+apiKey: str = "569760ff55e24c593b9cf89e8503decd"
 
 def get_popular(media_type):
     tmdb = TMDBRequest(media_type=media_type)
@@ -15,8 +17,8 @@ def get_popular(media_type):
                                              lang=tmdb.lang,
                                              id=media["id"],
                                              name=media["title"],
-                                             backdrop="https://image.tmdb.org/t/p/original" + media["backdrop_path"],
-                                             poster="https://image.tmdb.org/t/p/original" + media["poster_path"],
+                                             backdrop=tmdb_picture_base_link + media["backdrop_path"],
+                                             poster=tmdb_picture_base_link + media["poster_path"],
                                              genres=media["genre_ids"],
                                              overview=media["overview"],
                                              runtime="",
@@ -27,7 +29,7 @@ def get_popular(media_type):
                                              adult=media["adult"],
                                              videos=[]))
             elif media_type == "tv":
-                content.append(TMBDContent(media_type=tmdb.media_type,
+                content.append(TMDBContent(media_type=tmdb.media_type,
                                            lang=tmdb.lang,
                                            id=media["id"],
                                            name=media["name"]))
@@ -41,24 +43,24 @@ def get_popular(media_type):
 
 
 def search(media):
-    response_search = requests.get("https://api.themoviedb.org/3/search/" + media.mediaType + "?api_key=" +
+    response_search = requests.get("https://api.themoviedb.org/3/search/" + media.media_type + "?api_key=" +
                                    apiKey + "&language=" + media.lang + "&language=" + media.lang +
                                    "&query=" + media.query).json()
     return response_search
 
 
 def get_media_info(media):
-    response_video = requests.get("https://api.themoviedb.org/3/" + media.mediaType +
+    response_video = requests.get("https://api.themoviedb.org/3/" + media.media_type +
                                   "/" + str(media.id) + "/videos?api_key=" + apiKey + "&language=" + media.lang).json()
-    response_info = requests.get("https://api.themoviedb.org/3/" + media.mediaType +
+    response_info = requests.get("https://api.themoviedb.org/3/" + media.media_type +
                                  "/" + str(media.id) + "?api_key=" + apiKey + "&language=" + media.lang).json()
     info = TMDBMovieInfo(
-        mediaType=media.mediaType,
+        media_type=media.media_type,
         lang=media.lang,
         id=media.id,
-        name=media.name,
-        backdrop=response_info["backdrop_path"],
-        poster=response_info["poster_path"],
+        name=response_info["title"],
+        backdrop=tmdb_picture_base_link + response_info["backdrop_path"],
+        poster=tmdb_picture_base_link + response_info["poster_path"],
         genres=response_info["genres"],
         overview=response_info["overview"],
         runtime=response_info["runtime"],
@@ -69,6 +71,4 @@ def get_media_info(media):
         adult=response_info["adult"],
         videos=response_video["results"]
     )
-    if response_info["belongs_to_collection"]:
-        info = TMDBMovieInfo(collection=response_info["belongs_to_collection"])
     return info

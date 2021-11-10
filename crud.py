@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 import models
+import tmdb
 
 
 def get_movie(db: Session, film_id: str):
@@ -13,7 +14,13 @@ def get_movie_by_hash(db: Session, hash_torrent: str):
 
 
 def get_movies(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Movie).offset(skip).limit(limit).all()
+    movies = db.query(models.Movie).offset(skip).limit(limit).all()
+    movies_with_details = []
+    for movie in movies:
+        movies_with_details.append(
+            tmdb.get_media_info(models.TMDBContent(id=movie.id_imdb, media_type="movie"))
+        )
+    return movies_with_details
 
 
 def create_movie(db: Session, film: models.Movie):

@@ -1,6 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import Column, String, Float
+from sqlalchemy import Column, String
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from database import Base
@@ -16,9 +17,6 @@ class Movie(Base):
 
 
 # Search TMDB content
-
-apiKey: str = "569760ff55e24c593b9cf89e8503decd"
-
 
 class TMDBRequest(BaseModel):
     media_type: str
@@ -77,3 +75,11 @@ class TorrentFind(BaseModel):
 class Media(BaseModel):
     id: str
     name: Optional[str] = None
+
+
+def get_movie_local_infos(db: Session, movie: TMDBContent):
+    movie_infos = db.query(Movie).filter(Movie.id_imdb == movie.id).first()
+    if movie_infos is not None:
+        movie.added = True
+
+    return movie

@@ -58,10 +58,6 @@ def read_root():
 # TODO: Use GET Method for searching media instead POST
 async def get_top20(media_type: str, db: Session = Depends(get_db)):
     top20 = tmdb.get_popular(media_type=media_type)
-    movie = db.query(models.Movie).filter(models.Movie.id_imdb == top20[0].id).first()
-    if movie is not None:
-        top20[0].added = True
-        top20[0].progress = 30
     return top20
 
 
@@ -79,8 +75,10 @@ def tmdb_search(search: tmdb.TMDBSearch):
 
 @app.get("/movies")
 def read_films(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    films = crud.get_movies(db, skip=skip, limit=limit)
-    return films
+    movies = crud.get_movies(db=db, skip=skip, limit=limit)
+    for index, movie in enumerate(movies):
+        movies[index] = models.get_movie_local_infos(db, movie)
+    return movies
 
 
 @app.post("/movies/delete")
